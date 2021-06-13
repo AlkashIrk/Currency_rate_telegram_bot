@@ -38,6 +38,11 @@ def start_bot():
     updater.dispatcher.add_handler(CallbackQueryHandler(cancel_menu, pattern='cancel'))
     updater.dispatcher.add_handler(CallbackQueryHandler(settings_menu, pattern='settings'))
     updater.dispatcher.add_handler(CallbackQueryHandler(do_redraw_menu, pattern='redraw_menu'))
+
+    updater.dispatcher.add_handler(CallbackQueryHandler(user_currency_menu, pattern='toggle_currency'))
+    updater.dispatcher.add_handler(CallbackQueryHandler(toggle_user_currency, pattern='toggle_user_currency!'))
+
+
     updater.dispatcher.add_handler(MessageHandler(Filters.text, parse_mess))
     updater.dispatcher.add_error_handler(error)
 

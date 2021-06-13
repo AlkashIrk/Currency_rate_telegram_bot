@@ -26,8 +26,7 @@ def create_base():
     global c, conn
     # Create table 
     c.execute('''CREATE TABLE users
-                (id INTEGER PRIMARY KEY AUTOINCREMENT,        
-                tg_id INTEGER UNIQUE,
+                (tg_id INTEGER PRIMARY KEY UNIQUE,
                 name TEXT,
                 last_currency TEXT DEFAULT 'USD'
                 )''')
@@ -38,9 +37,8 @@ def create_base():
                     )''')
 
     c.execute('''CREATE TABLE currency
-                        (id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        name TEXT,
-                        code TEXT UNIQUE,
+                        (name TEXT,
+                        code TEXT PRIMARY KEY UNIQUE,
                         nominal REAL,
                         value REAL
                         )''')

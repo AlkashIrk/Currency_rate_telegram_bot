@@ -6,21 +6,7 @@ def parse_mess(bot, update):
     user_name = bot.effective_chat.full_name
     text_data = bot.effective_message.text
 
-    data_update = []
-    data_update.append([
-        user_id,
-        user_name
-    ])
-    base_sqlite.replace_data(
-        table='users(tg_id, name)',
-        data=tuple(data_update)
-    )
-
-    user_currency = base_sqlite.select(
-        what='last_currency',
-        table='users',
-        expression='tg_id=%s' % user_id
-    )[0][0]
+    user_currency = get_user_currency(user_id=user_id, user_name=user_name)
 
     value_str = text_data.replace(' ', '')
     value_str = value_str.replace(',', '.')
@@ -61,3 +47,30 @@ def parse_mess(bot, update):
             text=full_message,
             disable_web_page_preview=True
         )
+
+
+def get_user_currency(user_id, user_name):
+    try:
+        base_sqlite.select(
+            what='name',
+            table='users',
+            expression='tg_id=%s' % user_id
+        )[0][0]
+    except:
+        data_update = []
+        data_update.append([
+            user_id,
+            user_name
+        ])
+        base_sqlite.replace_data(
+            table='users(tg_id, name)',
+            data=tuple(data_update)
+        )
+
+    user_currency = base_sqlite.select(
+        what='last_currency',
+        table='users',
+        expression='tg_id=%s' % user_id
+    )[0][0]
+
+    return user_currency
