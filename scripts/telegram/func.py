@@ -42,7 +42,7 @@ def parse_mess(bot, update):
 
     except Exception as inst:
         print("\t%s" % inst)
-        full_message = "Произошла ошибка при вводе данных. Введите сумму для конвертации валюты."
+        full_message = "Произошла ошибка при вводе данных. Введите число для конвертации валюты."
         bot.message.reply_text(
             text=full_message,
             disable_web_page_preview=True
@@ -74,3 +74,17 @@ def get_user_currency(user_id, user_name):
     )[0][0]
 
     return user_currency
+
+
+def get_base_info():
+    try:
+        last_update=base_sqlite.select(
+            table='settings',
+            what='value',
+            expression='name="last_update"'
+        )[0][0]
+        text = 'Последнее обновление %s\n\nДля конвертации введите число в сообщении' % last_update
+    except:
+        return None
+
+    return text

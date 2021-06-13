@@ -1,6 +1,8 @@
 import scripts.globals as global_var
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
-from scripts.TG_menu.tele_menu_message import *
+from scripts.telegram.menu.menu_message import *
+from scripts.telegram.func import *
+
 menu_message = {}
 last_message_id = 0
 
@@ -11,8 +13,10 @@ def main_menu(bot, update):
     menu_message['id'] = menu_message_id
     menu_message['text'] = main_menu_message()
     menu_message['keyboard'] = main_menu_keyboard()
-    bot.callback_query.message.edit_text(main_menu_message(),
-                                         reply_markup=main_menu_keyboard())
+    bot.callback_query.message.edit_text(
+        text=main_menu_message(),
+        reply_markup=main_menu_keyboard()
+    )
 
 
 def cancel_menu(bot, update):
@@ -20,8 +24,17 @@ def cancel_menu(bot, update):
 
 
 def main_menu_keyboard():
-    keyboard = [[InlineKeyboardButton('Статистика', callback_data='statistic')],
+    keyboard = [[InlineKeyboardButton('Информация', callback_data='info')],
                 [InlineKeyboardButton('Настройки', callback_data='settings')]
-                # [InlineKeyboardButton('Выйти', callback_data='cancel')]
                 ]
     return InlineKeyboardMarkup(keyboard)
+
+
+def info_menu(bot, update):
+    chat_id = bot.effective_chat.id
+    full_message = get_base_info()
+
+    bot.callback_query.message.reply_text(
+        text=full_message,
+        disable_web_page_preview=True
+    )
