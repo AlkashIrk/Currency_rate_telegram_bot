@@ -1,6 +1,8 @@
 import scripts.globals as global_var
 from telegram.ext import Updater
 from telegram.ext import CommandHandler, CallbackQueryHandler
+from telegram.ext import MessageHandler, Filters
+from scripts.tg_parse_mess import *
 from scripts.TG_menu.tele_menu_message import *
 from scripts.TG_menu.tele_menu_main import *
 from scripts.TG_menu.tele_menu_settings import *
@@ -36,6 +38,7 @@ def start_bot():
     updater.dispatcher.add_handler(CallbackQueryHandler(cancel_menu, pattern='cancel'))
     updater.dispatcher.add_handler(CallbackQueryHandler(settings_menu, pattern='settings'))
     updater.dispatcher.add_handler(CallbackQueryHandler(do_redraw_menu, pattern='redraw_menu'))
+    updater.dispatcher.add_handler(MessageHandler(Filters.text, parse_mess))
     updater.dispatcher.add_error_handler(error)
 
     updater.start_polling()

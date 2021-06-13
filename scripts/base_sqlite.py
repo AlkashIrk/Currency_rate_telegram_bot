@@ -13,12 +13,12 @@ def __init__():
 
     if not base_exist:
         Path(os.path.dirname(base_name)).mkdir(parents=True, exist_ok=True)
-        conn = sqlite3.connect(base_name)
+        conn = sqlite3.connect(base_name, check_same_thread=False)
         c = conn.cursor()
         create_base()
     else:
         print('Base %s exist' % base_name)
-        conn = sqlite3.connect(base_name)
+        conn = sqlite3.connect(base_name, check_same_thread=False)
         c = conn.cursor()
 
 
@@ -27,9 +27,9 @@ def create_base():
     # Create table 
     c.execute('''CREATE TABLE users
                 (id INTEGER PRIMARY KEY AUTOINCREMENT,        
-                tg_id INTEGER,
+                tg_id INTEGER UNIQUE,
                 name TEXT,
-                last_currency INTEGER
+                last_currency TEXT DEFAULT 'USD'
                 )''')
 
     c.execute('''CREATE TABLE settings
