@@ -11,50 +11,91 @@ last_message_id = 0
 def redraw_menu(bot, redraw_force=False):
     global last_message_id
 
-    menu_message_id = menu_message['id']
+    user_id = bot.effective_chat.id
+
+    menu_message_id = menu_message[user_id]['id']
     if last_message_id > menu_message_id or redraw_force:
         bot.callback_query.message.delete()
         menu_message_id = bot.callback_query.message.reply_text(
-            text=menu_message['text'],
-            reply_markup=menu_message['keyboard']
+            text=menu_message[user_id]['text'],
+            reply_markup=menu_message[user_id]['keyboard']
         )
         menu_message['id'] = menu_message_id.message_id
     last_message_id = menu_message['id']
 
 
 def do_redraw_menu(bot, update):
-    chat_id = bot.effective_chat.id
+    global menu_message
+
+    user_id = bot.effective_chat.id
     menu_message_id = bot.effective_message.message_id
 
-    menu_message['id'] = menu_message_id
-    menu_message['text'] = main_menu_message()
-    menu_message['keyboard'] = main_menu_keyboard()
+    user_info = {
+        user_id:
+            {
+                'id': menu_message_id,
+                'text': main_menu_message(),
+                'keyboard': main_menu_keyboard()
+            }
+    }
+    menu_message.update(user_info)
+
     redraw_menu(bot, redraw_force=True)
 
 
 def settings_menu(bot, update):
     global menu_message
-    chat_id = bot.effective_chat.id
+
+    user_id = bot.effective_chat.id
+    user_name = bot.effective_chat.full_name
     menu_message_id = bot.effective_message.message_id
 
-    menu_message['id'] = menu_message_id
-    menu_message['text'], menu_message['keyboard'] = settings_menu_keyboard(bot=bot)
+    user_currency = get_user_currency(
+        user_id=user_id,
+        user_name=user_name
+    )
+
+    user_info = {
+        user_id:
+            {
+                'id': menu_message_id,
+                'text': 'Текущая валюта %s' % user_currency,
+                'keyboard': settings_menu_keyboard()
+            }
+    }
+    menu_message.update(user_info)
+
     bot.callback_query.message.edit_text(
-        text=menu_message['text'],
-        reply_markup=menu_message['keyboard']
+        text=user_info[user_id]['text'],
+        reply_markup=user_info[user_id]['keyboard']
     )
 
 
 def user_currency_menu(bot, update):
     global menu_message
-    chat_id = bot.effective_chat.id
-    menu_message_id = bot.effective_message.message_id
-    menu_message['id'] = menu_message_id
 
-    menu_message['keyboard'] = user_currency_keyboard()
+    user_id = bot.effective_chat.id
+    user_name = bot.effective_chat.full_name
+    menu_message_id = bot.effective_message.message_id
+
+    user_currency = get_user_currency(
+        user_id=user_id,
+        user_name=user_name
+    )
+
+    user_info = {
+        user_id:
+            {
+                'id': menu_message_id,
+                'text': 'Текущая валюта %s' % user_currency,
+                'keyboard': user_currency_keyboard()
+            }
+    }
+    menu_message.update(user_info)
+
     bot.callback_query.message.edit_text(
-        text=menu_message['text'],
-        reply_markup=menu_message['keyboard']
+        text=user_info[user_id]['text'],
+        reply_markup=user_info[user_id]['keyboard']
     )
 
 
@@ -67,12 +108,13 @@ def toggle_user_currency(bot, update):
 
     user_currency = response.split('!')[1]
 
-    data_update = []
-    data_update.append([
-        user_id,
-        user_name,
-        user_currency
-    ])
+    data_update = [
+        [
+            user_id,
+            user_name,
+            user_currency
+        ]
+    ]
 
     base_sqlite.replace_data(
         table='users(tg_id, name, last_currency)',
@@ -95,12 +137,25 @@ def toggle_user_currency(bot, update):
         parse_mode='markdown',
         disable_web_page_preview=True
     )
+
+    user_currency = get_user_currency(
+        user_id=user_id,
+        user_name=user_name
+    )
+
     last_message_id = message.message_id
-
     menu_message_id = bot.effective_message.message_id
-    menu_message['id'] = menu_message_id
 
-    menu_message['text'], menu_message['keyboard'] = settings_menu_keyboard(bot=bot)
+    user_info = {
+        user_id:
+            {
+                'id': menu_message_id,
+                'text': 'Текущая валюта %s' % user_currency,
+                'keyboard': settings_menu_keyboard()
+            }
+    }
+    menu_message.update(user_info)
+
     redraw_menu(bot, redraw_force=True)
 
 
@@ -109,23 +164,13 @@ def toggle_user_currency(bot, update):
 '''
 
 
-def settings_menu_keyboard(bot):
-    user_id = bot.effective_chat.id
-    user_name = bot.effective_chat.full_name
-
-    user_currency = get_user_currency(
-        user_id=user_id,
-        user_name=user_name
-    )
-
-    heading = 'Текущая валюта %s' % user_currency
-
+def settings_menu_keyboard():
     keyboard = [[InlineKeyboardButton('Сменить валюту', callback_data='toggle_currency')],
                 [InlineKeyboardButton('Перерисовать меню', callback_data='redraw_menu')],
                 [InlineKeyboardButton('Назад', callback_data='main')],
                 [InlineKeyboardButton('Выйти', callback_data='cancel')]
                 ]
-    return heading, InlineKeyboardMarkup(keyboard)
+    return InlineKeyboardMarkup(keyboard)
 
 
 def user_currency_keyboard():

@@ -64,11 +64,12 @@ def get_user_currency(user_id, user_name):
             expression='tg_id=%s' % user_id
         )[0][0]
     except:
-        data_update = []
-        data_update.append([
-            user_id,
-            user_name
-        ])
+        data_update = [
+            [
+                user_id,
+                user_name
+            ]
+        ]
         base_sqlite.replace_data(
             table='users(tg_id, name)',
             data=tuple(data_update)

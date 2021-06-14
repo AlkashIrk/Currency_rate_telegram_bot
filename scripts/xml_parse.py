@@ -46,11 +46,10 @@ def update_data():
         last_update = None
 
     if last_update != update_date:
-        data_update = []
-        data_update.append([
+        data_update = [[
             'last_update',
             update_date
-        ])
+        ]]
         base_sqlite.replace_data(
             table='settings(name, value)',
             data=tuple(data_update)

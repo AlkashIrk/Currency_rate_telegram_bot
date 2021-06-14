@@ -31,7 +31,6 @@ def main_menu_keyboard():
 
 
 def info_menu(bot, update):
-    chat_id = bot.effective_chat.id
     full_message = get_base_info()
 
     bot.callback_query.message.reply_text(
