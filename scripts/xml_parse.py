@@ -2,12 +2,13 @@ import requests
 import xmltodict
 import scripts.base_sqlite as base_sqlite
 
-
 url = "https://www.cbr-xml-daily.ru/daily_utf8.xml"
 
 
 def update_data():
     data = get_data()
+    if data is False:
+        return False
     data_insert = {}
     try:
         update_date = data['ValCurs']['@Date']
@@ -35,7 +36,6 @@ def update_data():
         pass
     del data
 
-
     try:
         last_update = base_sqlite.select(
             what='value',
@@ -47,7 +47,7 @@ def update_data():
 
     if last_update != update_date:
         data_update = []
-        data_update.append ([
+        data_update.append([
             'last_update',
             update_date
         ])
@@ -71,10 +71,15 @@ def update_data():
             table='currency(code, name, nominal, value)',
             data=data_update
         )
+    return True
 
 
 def get_data():
     global url
-    response = requests.get(url)
-    data = xmltodict.parse(response.content)
-    return data
+    try:
+        response = requests.get(url)
+        data = xmltodict.parse(response.content)
+        return data
+    except Exception as inst:
+        print("\t%s" % inst)
+        return False

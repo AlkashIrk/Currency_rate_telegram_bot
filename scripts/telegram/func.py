@@ -1,7 +1,14 @@
+import time
 import scripts.base_sqlite as base_sqlite
+from scripts.xml_parse import update_data
+
+# периодичность проверки курсов валют на сайте (в секундах) - каждый час
+check_period = 60 * 60 * 1
+last_check = 0
 
 
 def parse_mess(bot, update):
+    check_updates()
     user_id = bot.effective_chat.id
     user_name = bot.effective_chat.full_name
     text_data = bot.effective_message.text
@@ -78,7 +85,7 @@ def get_user_currency(user_id, user_name):
 
 def get_base_info():
     try:
-        last_update=base_sqlite.select(
+        last_update = base_sqlite.select(
             table='settings',
             what='value',
             expression='name="last_update"'
@@ -88,3 +95,30 @@ def get_base_info():
         return None
 
     return text
+
+
+def check_updates():
+    global last_check
+    timestamp_now = round(time.time())
+
+    if last_check == 0 or last_check + check_period <= timestamp_now:
+        try:
+            last_check = base_sqlite.select(
+                table='settings',
+                what='value',
+                expression='name="last_check"'
+            )[0][0]
+        except:
+            last_check = 0
+
+    if last_check + check_period <= timestamp_now or last_check == 0:
+        update_result = update_data()
+        if update_result:
+            data_update = [[
+                'last_check',
+                timestamp_now]
+            ]
+            base_sqlite.replace_data(
+                table='settings(name, value)',
+                data=tuple(data_update)
+            )
