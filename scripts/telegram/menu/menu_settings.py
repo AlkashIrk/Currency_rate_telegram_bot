@@ -2,7 +2,6 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 import scripts.base_sqlite as base_sqlite
 from scripts.telegram.func import get_user_currency
 from scripts.telegram.menu.menu_main import main_menu_keyboard
-from scripts.telegram.menu.menu_message import *
 
 menu_message = {}
 last_message_id = 0
@@ -28,13 +27,19 @@ def do_redraw_menu(bot, update):
     global menu_message
 
     user_id = bot.effective_chat.id
+    user_name = bot.effective_chat.full_name
     menu_message_id = bot.effective_message.message_id
+
+    user_currency = get_user_currency(
+        user_id=user_id,
+        user_name=user_name
+    )
 
     user_info = {
         user_id:
             {
                 'id': menu_message_id,
-                'text': main_menu_message(),
+                'text': 'Текущая валюта %s' % user_currency,
                 'keyboard': main_menu_keyboard()
             }
     }
@@ -127,8 +132,8 @@ def toggle_user_currency(bot, update):
         expression='code="%s"' % user_currency
     )[0]
 
-    message_head = 'Валюта для конвертации изменена на:\n'
-    message_body = '%s\nКод валюты: %s' % (data[2], user_currency)
+    message_head = 'Валюта для конвертации изменена:\n\n'
+    message_body = 'Код валюты: %s\nКурс:\n%s %s = %s руб' % (user_currency, data[0], data[2], data[1])
 
     full_message = message_head + message_body
 

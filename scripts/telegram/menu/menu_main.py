@@ -1,6 +1,5 @@
 import scripts.globals as global_var
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
-from scripts.telegram.menu.menu_message import *
 from scripts.telegram.func import *
 
 menu_message = {}
@@ -9,13 +8,29 @@ last_message_id = 0
 
 def main_menu(bot, update):
     global menu_message
+
+    user_id = bot.effective_chat.id
+    user_name = bot.effective_chat.full_name
     menu_message_id = bot.effective_message.message_id
-    menu_message['id'] = menu_message_id
-    menu_message['text'] = main_menu_message()
-    menu_message['keyboard'] = main_menu_keyboard()
+
+    user_currency = get_user_currency(
+        user_id=user_id,
+        user_name=user_name
+    )
+
+    user_info = {
+        user_id:
+            {
+                'id': menu_message_id,
+                'text': 'Текущая валюта %s' % user_currency,
+                'keyboard': main_menu_keyboard()
+            }
+    }
+    menu_message.update(user_info)
+
     bot.callback_query.message.edit_text(
-        text=main_menu_message(),
-        reply_markup=main_menu_keyboard()
+        text=user_info[user_id]['text'],
+        reply_markup=user_info[user_id]['keyboard']
     )
 
 

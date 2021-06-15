@@ -3,7 +3,6 @@ from telegram.ext import Updater
 from telegram.ext import CommandHandler, CallbackQueryHandler
 from telegram.ext import MessageHandler, Filters
 from scripts.telegram.func import *
-from scripts.telegram.menu.menu_message import *
 from scripts.telegram.menu.menu_main import *
 from scripts.telegram.menu.menu_settings import *
 
@@ -19,12 +18,36 @@ if token is None:
 
 def start(bot, update):
     global updater
-    message_id = bot.message.message_id
-    chat_id = bot.message.chat.id
+    global menu_message
 
-    bot.message.reply_text(main_menu_message(),
-                           reply_markup=main_menu_keyboard())
-    updater.bot.delete_message(chat_id=chat_id, message_id=message_id)
+    user_id = bot.message.chat.id
+    user_name = bot.effective_chat.full_name
+    menu_message_id = bot.message.message_id
+
+    user_currency = get_user_currency(
+        user_id=user_id,
+        user_name=user_name
+    )
+
+    user_info = {
+        user_id:
+            {
+                'id': menu_message_id,
+                'text': 'Текущая валюта %s' % user_currency,
+                'keyboard': main_menu_keyboard()
+            }
+    }
+    menu_message.update(user_info)
+
+    bot.message.reply_text(
+        text=user_info[user_id]['text'],
+        reply_markup=user_info[user_id]['keyboard']
+    )
+
+    updater.bot.delete_message(
+        chat_id=user_id,
+        message_id=menu_message_id
+    )
 
 
 def error(update, context):
